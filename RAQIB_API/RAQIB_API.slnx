@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="D:/RAQIB/RAQIB_API/RAQIB.Core/RAQIB.Core.csproj" />
+  <Project Path="D:/RAQIB/RAQIB_API/RAQIB_API/RAQIB_API.csproj" />
+  <Project Path="RAQIB.Infrastructure/RAQIB.Infrastructure.csproj" />
+</Solution>
