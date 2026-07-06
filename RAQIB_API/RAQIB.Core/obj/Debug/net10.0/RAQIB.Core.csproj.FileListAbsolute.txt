@@ -10,3 +10,16 @@ D:\RAQIB\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.dll
 D:\RAQIB\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\refint\RAQIB.Core.dll
 D:\RAQIB\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.pdb
 D:\RAQIB\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\ref\RAQIB.Core.dll
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\bin\Debug\net10.0\RAQIB.Core.deps.json
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\bin\Debug\net10.0\RAQIB.Core.dll
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\bin\Debug\net10.0\RAQIB.Core.pdb
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.csproj.AssemblyReference.cache
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.AssemblyInfoInputs.cache
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.AssemblyInfo.cs
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.csproj.CoreCompileInputs.cache
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.sourcelink.json
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.dll
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\refint\RAQIB.Core.dll
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\RAQIB.Core.pdb
+D:\RAQIB\Raqib\RAQIB_API\RAQIB.Core\obj\Debug\net10.0\ref\RAQIB.Core.dll

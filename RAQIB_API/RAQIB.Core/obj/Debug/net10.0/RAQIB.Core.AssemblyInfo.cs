@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RAQIB.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+853b836a22737897ad4e941604c7a33e49897667")]
 [assembly: System.Reflection.AssemblyProductAttribute("RAQIB.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RAQIB.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

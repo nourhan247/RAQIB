@@ -22,11 +22,8 @@ public interface IAiAgentService
 
 public interface IEmailService
 {
+    Task SendOtpEmailAsync(string toEmail, string fullName, string otp);
     Task SendHighSeverityAlertAsync(Report report, string adminEmail);
-    Task SendWelcomeEmailAsync(
-    string toEmail,
-    string fullName,
-    string confirmLink);
 }
 
 public interface IImageStorageService

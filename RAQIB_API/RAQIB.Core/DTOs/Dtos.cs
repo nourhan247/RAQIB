@@ -5,6 +5,10 @@ public record RegisterDto(string FullName, string Email, string Password);
 public record LoginDto(string Email, string Password);
 public record AuthResultDto(string Token, string UserId, string FullName, string Role, DateTime Expires);
 
+// ── OTP ──────────────────────────────────────────
+public record VerifyOtpDto(string UserId, string Otp);
+public record ResendOtpDto(string Email);
+
 // ── Report ───────────────────────────────────────
 public record CreateReportDto(
     string Message,
@@ -48,7 +52,7 @@ public record MapPointDto(
     string PredictedClass,
     string SeverityLabel,
     int SeverityScore,
-    int CountInArea,      // عدد البلاغات في نفس المنطقة — يحدد حجم الدائرة
+    int CountInArea,
     DateTime CreatedAt
 );
 
@@ -59,5 +63,5 @@ public record DashboardStatsDto(
     int ResolvedReports,
     int HighSeverityReports,
     Dictionary<string, int> CountByClass,
-    Dictionary<string, int> CountByDay     // آخر 7 أيام
+    Dictionary<string, int> CountByDay
 );

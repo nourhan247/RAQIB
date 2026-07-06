@@ -865,11 +865,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\RAQIB\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj",
+      "projectUniqueName": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj",
       "projectName": "RAQIB.Core",
-      "projectPath": "D:\\RAQIB\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj",
+      "projectPath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj",
       "packagesPath": "C:\\Users\\AL-Handasia\\.nuget\\packages\\",
-      "outputPath": "D:\\RAQIB\\RAQIB_API\\RAQIB.Core\\obj\\",
+      "outputPath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\NuGetPackages"

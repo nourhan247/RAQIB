@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using RAQIB.Core.DTOs;
 using RAQIB.Core.Interfaces;
@@ -19,99 +19,121 @@ public class AuthController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signIn;
     private readonly IConfiguration _config;
     private readonly IEmailService _email;
+    private readonly IMemoryCache _cache;
 
     public AuthController(
         UserManager<ApplicationUser> users,
         SignInManager<ApplicationUser> signIn,
         IConfiguration config,
-        IEmailService email)
+        IEmailService email,
+        IMemoryCache cache)
     {
         _users  = users;
         _signIn = signIn;
         _config = config;
         _email  = email;
+        _cache  = cache;
     }
 
-    [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(string userId, string token)
-    {
-        var user = await _users.FindByIdAsync(userId);
-
-        if (user == null)
-            return BadRequest("User not found.");
-
-        token = Encoding.UTF8.GetString(
-            WebEncoders.Base64UrlDecode(token));
-
-        var result = await _users.ConfirmEmailAsync(user, token);
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok(new
-        {
-            message = "Email confirmed successfully."
-        });
-    }
-
+    // ── Register ─────────────────────────────────────────────
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
+        // تأكد إن الإيميل مش موجود
+        if (await _users.FindByEmailAsync(dto.Email) != null)
+            return BadRequest(new[] { "البريد الإلكتروني مستخدم بالفعل" });
+
         var user = new ApplicationUser
         {
             FullName = dto.FullName,
-            Email = dto.Email,
-            UserName = dto.Email
+            Email    = dto.Email,
+            UserName = dto.Email,
         };
 
         var result = await _users.CreateAsync(user, dto.Password);
-
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
 
         await _users.AddToRoleAsync(user, "User");
 
-        // إنشاء Token لتأكيد الإيميل
-        var token = await _users.GenerateEmailConfirmationTokenAsync(user);
+        // ── توليد OTP 6 أرقام ──
+        var otp     = new Random().Next(100000, 999999).ToString();
+        var cacheKey = $"otp_{user.Id}";
 
-        var encodedToken = WebEncoders.Base64UrlEncode(
-            Encoding.UTF8.GetBytes(token));
+        // احتفظ بالـ OTP في الـ cache لمدة 10 دقايق
+        _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(10));
 
-        var confirmLink =
-            $"http://localhost:5173/confirm-email?userId={user.Id}&token={encodedToken}";
+        // ابعت الإيميل
+        await _email.SendOtpEmailAsync(dto.Email, dto.FullName, otp);
 
-        await _email.SendWelcomeEmailAsync(
-            dto.Email,
-            dto.FullName,
-            confirmLink);
-
-        return Ok(new
-        {
-            message = "تم إنشاء الحساب، يرجى تأكيد البريد الإلكتروني."
-        });
+        return Ok(new { message = "تم إنشاء الحساب. تحقق من بريدك الإلكتروني للحصول على الكود.", userId = user.Id });
     }
 
+    // ── Verify OTP ───────────────────────────────────────────
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
+    {
+        var user = await _users.FindByIdAsync(dto.UserId);
+        if (user == null)
+            return BadRequest("مستخدم غير موجود");
+
+        var cacheKey = $"otp_{user.Id}";
+
+        if (!_cache.TryGetValue(cacheKey, out string? savedOtp))
+            return BadRequest("انتهت صلاحية الكود، اطلب كوداً جديداً");
+
+        if (savedOtp != dto.Otp)
+            return BadRequest("الكود غير صحيح");
+
+        // تأكيد الإيميل
+        user.EmailConfirmed = true;
+        await _users.UpdateAsync(user);
+
+        // احذف الـ OTP من الـ cache
+        _cache.Remove(cacheKey);
+
+        return Ok(new { message = "تم تأكيد البريد الإلكتروني بنجاح" });
+    }
+
+    // ── Resend OTP ───────────────────────────────────────────
+    [HttpPost("resend-otp")]
+    public async Task<IActionResult> ResendOtp([FromBody] ResendOtpDto dto)
+    {
+        var user = await _users.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return BadRequest("البريد الإلكتروني غير موجود");
+
+        if (user.EmailConfirmed)
+            return BadRequest("البريد الإلكتروني مؤكد بالفعل");
+
+        var otp      = new Random().Next(100000, 999999).ToString();
+        var cacheKey = $"otp_{user.Id}";
+        _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(10));
+
+        await _email.SendOtpEmailAsync(dto.Email, user.FullName, otp);
+
+        return Ok(new { message = "تم إرسال كود جديد", userId = user.Id });
+    }
+
+    // ── Login ────────────────────────────────────────────────
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         var user = await _users.FindByEmailAsync(dto.Email);
-
         if (user == null)
             return Unauthorized("بيانات غير صحيحة");
 
         if (!user.EmailConfirmed)
-            return Unauthorized("يرجى تأكيد البريد الإلكتروني أولاً.");
+            return Unauthorized(new { message = "يرجى تأكيد البريد الإلكتروني أولاً", needsVerification = true, userId = user.Id });
 
         if (!user.IsActive)
-            return Unauthorized("الحساب غير مفعل.");
+            return Unauthorized("الحساب غير مفعل");
 
         var result = await _signIn.CheckPasswordSignInAsync(user, dto.Password, false);
-
         if (!result.Succeeded)
             return Unauthorized("بيانات غير صحيحة");
 
         var roles = await _users.GetRolesAsync(user);
-
         var token = GenerateJwt(user, roles);
 
         return Ok(new AuthResultDto(
@@ -123,10 +145,11 @@ public class AuthController : ControllerBase
         ));
     }
 
+    // ── JWT Generator ────────────────────────────────────────
     private string GenerateJwt(ApplicationUser user, IList<string> roles)
     {
-        var key    = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var creds  = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
         {
@@ -137,10 +160,10 @@ public class AuthController : ControllerBase
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
         var token = new JwtSecurityToken(
-            issuer:   _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims:   claims,
-            expires:  DateTime.UtcNow.AddDays(7),
+            issuer:             _config["Jwt:Issuer"],
+            audience:           _config["Jwt:Audience"],
+            claims:             claims,
+            expires:            DateTime.UtcNow.AddDays(7),
             signingCredentials: creds
         );
 

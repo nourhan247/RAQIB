@@ -4726,11 +4726,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\RAQIB\\RAQIB_API\\RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj",
+      "projectUniqueName": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj",
       "projectName": "RAQIB.Infrastructure",
-      "projectPath": "D:\\RAQIB\\RAQIB_API\\RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj",
+      "projectPath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\AL-Handasia\\.nuget\\packages\\",
-      "outputPath": "D:\\RAQIB\\RAQIB_API\\RAQIB.Infrastructure\\obj\\",
+      "outputPath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\NuGetPackages"
@@ -4752,8 +4752,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\RAQIB\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj": {
-              "projectPath": "D:\\RAQIB\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj"
+            "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj": {
+              "projectPath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\RAQIB.Core.csproj"
             }
           }
         }

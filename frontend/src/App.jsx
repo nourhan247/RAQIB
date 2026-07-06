@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./services/AuthContext";
 import LoginPage      from "./pages/LoginPage";
 import RegisterPage   from "./pages/RegisterPage";
+import VerifyOtpPage  from "./pages/VerifyOtpPage";
 import UserDashboard  from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -17,11 +18,12 @@ function AppRoutes() {
   const { user, isAdmin } = useAuth();
   return (
     <Routes>
-      <Route path="/login"    element={user ? <Navigate to={isAdmin ? "/admin" : "/dashboard"} /> : <LoginPage />} />
-      <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
-      <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-      <Route path="/admin"     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-      <Route path="*"          element={<Navigate to={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} />} />
+      <Route path="/login"      element={user ? <Navigate to={isAdmin ? "/admin" : "/dashboard"} /> : <LoginPage />} />
+      <Route path="/register"   element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/dashboard"  element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+      <Route path="/admin"      element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+      <Route path="*"           element={<Navigate to={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} />} />
     </Routes>
   );
 }

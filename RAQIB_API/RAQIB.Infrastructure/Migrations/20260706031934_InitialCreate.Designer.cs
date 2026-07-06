@@ -12,8 +12,8 @@ using RAQIB.Infrastructure.Data;
 namespace RAQIB.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260701142255_CreateInitialDatabase")]
-    partial class CreateInitialDatabase
+    [Migration("20260706031934_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

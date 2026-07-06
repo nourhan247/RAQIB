@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+BW0xR4H26I=",
+  "dgSpecHash": "ZejPKrT6mhk=",
   "success": true,
-  "projectFilePath": "D:\\RAQIB\\RAQIB_API\\RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj",
+  "projectFilePath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

@@ -97,6 +97,7 @@ namespace RAQIB_API
             // ── Controllers ──────────────────────────────────────────────
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddMemoryCache();
 
             // ── NSwag (Swagger UI) ───────────────────────────────────────
             builder.Services.AddOpenApiDocument(config =>
