@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\RAQIB\\Raqib\\RAQIB_API\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A21DCD50-BF4A-5C90-3717-323E97E682E8}|RAQIB_API\\RAQIB_API.csproj|d:\\raqib\\raqib\\raqib_api\\raqib_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A21DCD50-BF4A-5C90-3717-323E97E682E8}|RAQIB_API\\RAQIB_API.csproj|solutionrelative:raqib_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{80EDE18F-A163-83E2-C32A-FDC1098EA110}|RAQIB.Core\\RAQIB.Core.csproj|d:\\raqib\\raqib\\raqib_api\\raqib.core\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{80EDE18F-A163-83E2-C32A-FDC1098EA110}|RAQIB.Core\\RAQIB.Core.csproj|solutionrelative:raqib.core\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -13,10 +17,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{D6F7F54D-58AA-7CC8-63A1-D699CE8FB830}|RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj|d:\\raqib\\raqib\\raqib_api\\raqib.infrastructure\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6F7F54D-58AA-7CC8-63A1-D699CE8FB830}|RAQIB.Infrastructure\\RAQIB.Infrastructure.csproj|solutionrelative:raqib.infrastructure\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A21DCD50-BF4A-5C90-3717-323E97E682E8}|RAQIB_API\\RAQIB_API.csproj|d:\\raqib\\raqib\\raqib_api\\raqib_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{A21DCD50-BF4A-5C90-3717-323E97E682E8}|RAQIB_API\\RAQIB_API.csproj|solutionrelative:raqib_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A21DCD50-BF4A-5C90-3717-323E97E682E8}|RAQIB_API\\RAQIB_API.csproj|d:\\raqib\\raqib\\raqib_api\\raqib_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -58,11 +58,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Report.cs",
               "DocumentMoniker": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\Models\\Report.cs",
               "RelativeDocumentMoniker": "RAQIB.Core\\Models\\Report.cs",
@@ -70,12 +70,11 @@
               "RelativeToolTip": "RAQIB.Core\\Models\\Report.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-06T00:02:17.992Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-06T00:02:17.992Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "User.cs",
               "DocumentMoniker": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Core\\Models\\User.cs",
               "RelativeDocumentMoniker": "RAQIB.Core\\Models\\User.cs",
@@ -83,8 +82,7 @@
               "RelativeToolTip": "RAQIB.Core\\Models\\User.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-06T00:01:25.396Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-06T00:01:25.396Z"
             },
             {
               "$type": "Document",
@@ -96,18 +94,17 @@
               "RelativeToolTip": "RAQIB_API\\Controllers\\AuthController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAKwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-02T18:58:08.351Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T18:58:08.351Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB_API\\appsettings.json",
               "RelativeDocumentMoniker": "RAQIB_API\\appsettings.json",
               "ToolTip": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB_API\\appsettings.json",
               "RelativeToolTip": "RAQIB_API\\appsettings.json",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAkwBMAAAAUAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAkwBIAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-07-02T18:49:44.285Z",
               "EditorCaption": ""
@@ -122,12 +119,11 @@
               "RelativeToolTip": "RAQIB_API\\Program.cs",
               "ViewState": "AgIAAFUAAAAAAAAAAAAgwF4AAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-01T14:59:55.074Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-01T14:59:55.074Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "EmailService.cs",
               "DocumentMoniker": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB.Infrastructure\\Services\\EmailService.cs",
               "RelativeDocumentMoniker": "RAQIB.Infrastructure\\Services\\EmailService.cs",
@@ -135,8 +131,7 @@
               "RelativeToolTip": "RAQIB.Infrastructure\\Services\\EmailService.cs",
               "ViewState": "AgIAAE4AAAAAAAAAAAAqwGAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-02T22:18:50.342Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T22:18:50.342Z"
             },
             {
               "$type": "Document",
@@ -148,8 +143,7 @@
               "RelativeToolTip": "RAQIB.Core\\Interfaces\\IReportRepository.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAA6wAwAAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-02T23:57:43.972Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T23:57:43.972Z"
             },
             {
               "$type": "Document",
