@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+gunicorn
 python-multipart
 tensorflow
 numpy
@@ -8,3 +9,4 @@ pillow
 openai
 python-dotenv
 pydantic
+
