@@ -1,0 +1,80 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.*
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+coverage/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# ===========================
+# AI Models
+# ===========================
+
+# TensorFlow
+*.h5
+*.keras
+*.ckpt
+checkpoint
+
+# PyTorch
+*.pt
+*.pth
+
+# ONNX
+*.onnx
+
+# TensorFlow Lite
+*.tflite
+
+# Pickle
+*.pkl
+*.pickle
+*.joblib
+
+# ===========================
+# Uploaded Images
+# ===========================
+uploads/
+temp/
+results/
+
+# ===========================
+# Caches
+# ===========================
+.cache/
+.mypy_cache/

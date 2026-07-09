@@ -12,7 +12,7 @@ using RAQIB.Infrastructure.Data;
 namespace RAQIB.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260706031934_InitialCreate")]
+    [Migration("20260708030937_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -253,11 +253,26 @@ namespace RAQIB.Infrastructure.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
 
+                    b.Property<double>("AiSeverityScore")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Area")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ChatHistoryJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Confidence")
                         .HasColumnType("decimal(5,4)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<double>("DamagePercentage")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Governorate")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImagePath")
                         .IsRequired()
@@ -290,6 +305,9 @@ namespace RAQIB.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("Street")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()

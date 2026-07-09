@@ -18,6 +18,7 @@ public interface IReportRepository
 public interface IAiAgentService
 {
     Task<AiPredictionDto> PredictAsync(Stream imageStream, string fileName);
+    Task<string> ChatAsync(object predictionResult, string userMessage, List<DTOs.ChatMessageDto> history);
 }
 
 public interface IEmailService

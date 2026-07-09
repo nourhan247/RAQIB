@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using RAQIB.Core.Interfaces;
 
 namespace RAQIB.Infrastructure.Services;
@@ -6,23 +7,46 @@ public class ImageStorageService : IImageStorageService
 {
     private readonly string _uploadsPath;
 
-    public ImageStorageService() {}
+    public ImageStorageService(IWebHostEnvironment env)
+    {
+        // لو wwwroot مش موجود اعمله
+        if (!Directory.Exists(env.WebRootPath))
+        {
+            Directory.CreateDirectory(env.WebRootPath);
+        }
+
+        _uploadsPath = Path.Combine(env.WebRootPath, "uploads");
+
+        if (!Directory.Exists(_uploadsPath))
+        {
+            Directory.CreateDirectory(_uploadsPath);
+        }
+    }
 
     public async Task<string> SaveImageAsync(Stream imageStream, string fileName)
     {
-        var ext      = Path.GetExtension(fileName).ToLowerInvariant();
-        var safeName = $"{Guid.NewGuid()}{ext}";
-        var fullPath = Path.Combine(_uploadsPath, safeName);
+        var extension = Path.GetExtension(fileName);
 
-        using var fs = new FileStream(fullPath, FileMode.Create);
-        await imageStream.CopyToAsync(fs);
+        var newFileName = $"{Guid.NewGuid()}{extension}";
 
-        return $"/uploads/{safeName}";   // relative URL
+        var fullPath = Path.Combine(_uploadsPath, newFileName);
+
+        using var fileStream = new FileStream(fullPath, FileMode.Create);
+
+        await imageStream.CopyToAsync(fileStream);
+
+        return $"/uploads/{newFileName}";
     }
 
     public void DeleteImage(string imagePath)
     {
-        var fullPath = Path.Combine(_uploadsPath, Path.GetFileName(imagePath));
-        if (File.Exists(fullPath)) File.Delete(fullPath);
+        var fileName = Path.GetFileName(imagePath);
+
+        var fullPath = Path.Combine(_uploadsPath, fileName);
+
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
     }
 }

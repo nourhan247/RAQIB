@@ -275,8 +275,7 @@
                 "type": "object",
                 "properties": {
                   "Message": {
-                    "type": "string",
-                    "nullable": true
+                    "type": "string"
                   },
                   "Latitude": {
                     "type": "number",
@@ -285,6 +284,18 @@
                   "Longitude": {
                     "type": "number",
                     "format": "double"
+                  },
+                  "Governorate": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "Area": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "Street": {
+                    "type": "string",
+                    "nullable": true
                   },
                   "Address": {
                     "type": "string",
@@ -300,6 +311,82 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Reports/chat": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "operationId": "Reports_Chat",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChatDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Reports/chat/{reportId}": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "operationId": "Reports_GetChatHistory",
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -509,6 +596,19 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        }
+      },
+      "SendChatDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reportId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userMessage": {
             "type": "string"
           }
         }

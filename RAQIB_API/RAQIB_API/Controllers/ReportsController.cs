@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RAQIB.API.Hubs;
@@ -13,27 +14,27 @@ namespace RAQIB.API.Controllers;
 [Authorize]
 public class ReportsController : ControllerBase
 {
-    private readonly IReportRepository   _repo;
-    private readonly IAiAgentService     _ai;
+    private readonly IReportRepository _repo;
+    private readonly IAiAgentService _ai;
     private readonly IImageStorageService _storage;
-    private readonly IEmailService       _email;
+    private readonly IEmailService _email;
     private readonly NotificationService _notify;
-    private readonly IConfiguration      _config;
+    private readonly IConfiguration _config;
 
     public ReportsController(
         IReportRepository repo, IAiAgentService ai,
         IImageStorageService storage, IEmailService email,
         NotificationService notify, IConfiguration config)
     {
-        _repo    = repo;
-        _ai      = ai;
+        _repo = repo;
+        _ai = ai;
         _storage = storage;
-        _email   = email;
-        _notify  = notify;
-        _config  = config;
+        _email = email;
+        _notify = notify;
+        _config = config;
     }
 
-    // POST /api/reports  — اليوزر يرفع صورة + رسالة + موقع
+    // ── POST /api/reports ────────────────────────────────────
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] CreateReportDto dto, IFormFile image)
     {
@@ -48,69 +49,108 @@ public class ReportsController : ControllerBase
             return BadRequest("حجم الصورة يتجاوز 10MB");
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userName = User.FindFirstValue(ClaimTypes.Name) ?? "";
 
         // 1. حفظ الصورة
-        using var stream   = image.OpenReadStream();
+        using var stream = image.OpenReadStream();
         var imagePath = await _storage.SaveImageAsync(stream, image.FileName);
 
         // 2. إرسال للـ AI Agent
-        stream.Position = 0;
         AiPredictionDto prediction;
         try
         {
             using var aiStream = image.OpenReadStream();
             prediction = await _ai.PredictAsync(aiStream, image.FileName);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"AI Agent error: {ex.Message}");
             prediction = new AiPredictionDto(
-                "UNKNOWN", "غير معروف", 0, 0,
-                "تعذر تحليل الصورة حالياً، سيتم المراجعة يدوياً.", new());
+                "UNKNOWN", "غير معروف", 0, 0, 0, 0,
+                "تعذر تحليل الصورة حالياً، سيتم المراجعة يدوياً.", new(), new());
         }
 
-        // 3. حفظ في DB
+        // 3. بناء الـ initial chat history
+        var initialHistory = new List<ChatMessageDto>
+        {
+            new("assistant", prediction.AiReply)
+        };
+
+        // 4. حفظ في DB
         var report = new Report
         {
-            UserId         = userId,
-            ImagePath      = imagePath,
-            Message        = dto.Message,
-            Latitude       = dto.Latitude,
-            Longitude      = dto.Longitude,
-            Address        = dto.Address,
+            UserId = userId,
+            ImagePath = imagePath,
+            Message = dto.Message,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Governorate = dto.Governorate,
+            Area = dto.Area,
+            Street = dto.Street,
+            Address = dto.Address,
             PredictedClass = prediction.PredictedClass,
-            SeverityLabel  = prediction.SeverityLabel,
-            SeverityScore  = prediction.SeverityScore,
-            Confidence     = prediction.Confidence,
-            AiReply        = prediction.AiReply,
+            SeverityLabel = prediction.SeverityLabel,
+            SeverityScore = prediction.SeverityScore,
+            Confidence = prediction.Confidence,
+            DamagePercentage = prediction.DamagePercentage,
+            AiSeverityScore = prediction.AiSeverityScore,
+            AiReply = prediction.AiReply,
+            ChatHistoryJson = JsonSerializer.Serialize(initialHistory),
         };
 
         await _repo.CreateAsync(report);
 
-        // 4. رد فوري على اليوزر عبر SignalR
+        // 5. رد فوري عبر SignalR
         var replyPayload = new
         {
-            reportId       = report.Id,
+            reportId = report.Id,
             predictedClass = prediction.PredictedClass,
-            severityLabel  = prediction.SeverityLabel,
-            severityScore  = prediction.SeverityScore,
-            confidence     = prediction.Confidence,
-            aiReply        = prediction.AiReply,
+            severityLabel = prediction.SeverityLabel,
+            severityScore = prediction.SeverityScore,
+            confidence = prediction.Confidence,
+            damagePercentage = prediction.DamagePercentage,
+            aiSeverityScore = prediction.AiSeverityScore,
+            aiReply = prediction.AiReply,
             imagePath,
+            governorate = dto.Governorate,
+            area = dto.Area,
+            street = dto.Street,
         };
         await _notify.SendAiReplyAsync(userId, replyPayload);
 
-        // 5. تحديث الخريطة للكل
+        // 6. تحديث الخريطة للكل
         await _notify.BroadcastMapUpdateAsync(new
         {
-            report.Id, report.Latitude, report.Longitude,
-            prediction.PredictedClass, prediction.SeverityLabel,
-            prediction.SeverityScore, report.CreatedAt
+            report.Id,
+            report.Latitude,
+            report.Longitude,
+            prediction.PredictedClass,
+            prediction.SeverityLabel,
+            prediction.SeverityScore,
+            report.Governorate,
+            report.Area,
+            report.CreatedAt,
+            userName,
         });
 
-        // 6. تنبيه الأدمن لو خطورة عالية
+        // 7. تنبيه الأدمن + إيميل عند الخطورة العالية
         if (prediction.SeverityScore >= 3)
         {
-            await _notify.SendNewReportAlertAsync(replyPayload);
+            await _notify.SendNewReportAlertAsync(new
+            {
+                reportId = report.Id,
+                userName,
+                report.Governorate,
+                report.Area,
+                report.Street,
+                report.Latitude,
+                report.Longitude,
+                prediction.PredictedClass,
+                prediction.SeverityLabel,
+                prediction.SeverityScore,
+                status = "Pending",
+                createdAt = report.CreatedAt.ToString("o"),
+            });
             var adminEmail = _config["AdminEmail"]!;
             _ = Task.Run(() => _email.SendHighSeverityAlertAsync(report, adminEmail));
         }
@@ -118,16 +158,91 @@ public class ReportsController : ControllerBase
         return Ok(MapToDto(report));
     }
 
-    // GET /api/reports/my
+    // ── POST /api/reports/chat ───────────────────────────────
+    // اليوزر يبعت رسالة جديدة والـ Agent يرد مع الـ history
+    [HttpPost("chat")]
+    public async Task<IActionResult> Chat([FromBody] SendChatDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var report = await _repo.GetByIdAsync(dto.ReportId);
+
+        if (report == null) return NotFound();
+        if (report.UserId != userId) return Forbid();
+
+        // استرجاع الـ history الموجود
+        var history = string.IsNullOrEmpty(report.ChatHistoryJson)
+            ? new List<ChatMessageDto>()
+            : JsonSerializer.Deserialize<List<ChatMessageDto>>(report.ChatHistoryJson)
+              ?? new List<ChatMessageDto>();
+
+        // بناء prediction result object للـ Python agent
+        var predictionResult = new
+        {
+            predicted_class = report.PredictedClass,
+            confidence_score = report.Confidence * 100,
+            damage_percentage = report.DamagePercentage,
+            severity_score = report.AiSeverityScore,
+            severity_label = report.SeverityLabel switch
+            {
+                "عالية" => "High",
+                "متوسطة" => "Medium",
+                "منخفضة" => "Low",
+                _ => "Low"
+            },
+        };
+
+        // إضافة رسالة اليوزر للـ history
+        history.Add(new ChatMessageDto("user", dto.UserMessage));
+
+        // استدعاء Python chatbot
+        string reply;
+        try
+        {
+            reply = await _ai.ChatAsync(predictionResult, dto.UserMessage, history);
+        }
+        catch
+        {
+            reply = "معلش، حصلت مشكلة في الرد. جرب تاني.";
+        }
+
+        // إضافة رد الـ AI للـ history
+        history.Add(new ChatMessageDto("assistant", reply));
+
+        // حفظ الـ history في DB
+        report.ChatHistoryJson = JsonSerializer.Serialize(history);
+        await _repo.UpdateAsync(report);
+
+        return Ok(new ChatResponseDto(reply, history));
+    }
+
+    // ── GET /api/reports/chat/{reportId} ─────────────────────
+    [HttpGet("chat/{reportId:int}")]
+    public async Task<IActionResult> GetChatHistory(int reportId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var report = await _repo.GetByIdAsync(reportId);
+
+        if (report == null) return NotFound();
+        if (report.UserId != userId && !User.IsInRole("Admin")) return Forbid();
+
+        var history = string.IsNullOrEmpty(report.ChatHistoryJson)
+            ? new List<ChatMessageDto>()
+            : JsonSerializer.Deserialize<List<ChatMessageDto>>(report.ChatHistoryJson)
+              ?? new List<ChatMessageDto>();
+
+        return Ok(history);
+    }
+
+    // ── GET /api/reports/my ──────────────────────────────────
     [HttpGet("my")]
     public async Task<IActionResult> GetMy()
     {
-        var userId  = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var reports = await _repo.GetByUserIdAsync(userId);
         return Ok(reports.Select(MapToDto));
     }
 
-    // GET /api/reports/map  — للخريطة (كل اليوزرز يشوفوها)
+    // ── GET /api/reports/map ─────────────────────────────────
     [HttpGet("map")]
     public async Task<IActionResult> GetMapPoints()
     {
@@ -135,7 +250,7 @@ public class ReportsController : ControllerBase
         return Ok(points);
     }
 
-    // GET /api/reports/{id}
+    // ── GET /api/reports/{id} ────────────────────────────────
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -144,13 +259,12 @@ public class ReportsController : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var isAdmin = User.IsInRole("Admin");
-        if (!isAdmin && report.UserId != userId)
-            return Forbid();
+        if (!isAdmin && report.UserId != userId) return Forbid();
 
         return Ok(MapToDto(report));
     }
 
-    // PATCH /api/reports/{id}/status  — Admin فقط
+    // ── PATCH /api/reports/{id}/status ──────────────────────
     [HttpPatch("{id:int}/status")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
@@ -170,9 +284,25 @@ public class ReportsController : ControllerBase
     }
 
     private static ReportResponseDto MapToDto(Report r) => new(
-        r.Id, r.User?.FullName ?? "", r.ImagePath, r.Message,
-        r.Latitude, r.Longitude, r.Address,
-        r.PredictedClass, r.SeverityLabel, r.SeverityScore,
-        r.Confidence, r.AiReply, r.Status.ToString(), r.CreatedAt
+        r.Id,
+        r.User?.FullName ?? "",
+        r.UserId,
+        r.ImagePath,
+        r.Message,
+        r.Latitude,
+        r.Longitude,
+        r.Governorate,
+        r.Area,
+        r.Street,
+        r.Address,
+        r.PredictedClass,
+        r.SeverityLabel,
+        r.SeverityScore,
+        r.Confidence,
+        r.DamagePercentage,
+        r.AiSeverityScore,
+        r.AiReply,
+        r.Status.ToString(),
+        r.CreatedAt
     );
 }

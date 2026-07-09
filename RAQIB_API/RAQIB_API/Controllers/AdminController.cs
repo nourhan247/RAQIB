@@ -16,7 +16,7 @@ public class AdminController : ControllerBase
 
     public AdminController(IReportRepository repo, UserManager<ApplicationUser> users)
     {
-        _repo  = repo;
+        _repo = repo;
         _users = users;
     }
 
@@ -35,15 +35,28 @@ public class AdminController : ControllerBase
         var reports = await _repo.GetAllAsync();
         return Ok(reports.Select(r => new
         {
-            r.Id, r.ImagePath, r.Message,
-            r.Latitude, r.Longitude, r.Address,
-            r.PredictedClass, r.SeverityLabel, r.SeverityScore,
-            r.Confidence, r.AiReply,
-            Status    = r.Status.ToString(),
+            r.Id,
+            r.ImagePath,
+            r.Message,
+            r.Latitude,
+            r.Longitude,
+            r.Governorate,
+            r.Area,
+            r.Street,
+            r.Address,
+            r.PredictedClass,
+            r.SeverityLabel,
+            r.SeverityScore,
+            r.Confidence,
+            r.DamagePercentage,
+            r.AiSeverityScore,
+            r.AiReply,
+            Status = r.Status.ToString(),
             r.CreatedAt,
             r.ResolvedAt,
-            UserName  = r.User?.FullName,
-            UserEmail = r.User?.Email
+            UserName = r.User?.FullName,
+            UserEmail = r.User?.Email,
+            UserId = r.UserId,
         }));
     }
 
@@ -53,8 +66,11 @@ public class AdminController : ControllerBase
     {
         var users = _users.Users.Select(u => new
         {
-            u.Id, u.FullName, u.Email,
-            u.CreatedAt, u.IsActive,
+            u.Id,
+            u.FullName,
+            u.Email,
+            u.CreatedAt,
+            u.IsActive,
             ReportCount = u.Reports.Count
         }).ToList();
         return Ok(users);

@@ -11,23 +11,15 @@ export function AuthProvider({ children }) {
   });
 
 const login = useCallback(async (email, password) => {
-  const res = await fetch("https://localhost:7212/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    // بعت الـ error كـ JSON string عشان LoginPage يقدر يقراه
-    throw new Error(JSON.stringify(data));
+  try {
+    const data = await api.login({ email, password });
+    localStorage.setItem("raqib_token", data.token);
+    localStorage.setItem("raqib_user", JSON.stringify(data));
+    setUser(data);
+    return data;
+  } catch (err) {
+    throw err;
   }
-
-  localStorage.setItem("raqib_token", data.token);
-  localStorage.setItem("raqib_user", JSON.stringify(data));
-  setUser(data);
-  return data;
 }, []);
 
   const logout = useCallback(() => {

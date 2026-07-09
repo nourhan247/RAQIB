@@ -40,19 +40,23 @@ public class ReportRepository : IReportRepository
         await _db.SaveChangesAsync();
     }
 
-    // بيرجع كل النقاط للخريطة مع عدد البلاغات في نفس المنطقة
     public async Task<IEnumerable<MapPointDto>> GetMapPointsAsync()
     {
         var reports = await _db.Reports
             .Where(r => r.PredictedClass != null)
             .Select(r => new
             {
-                r.Id, r.Latitude, r.Longitude,
-                r.PredictedClass, r.SeverityLabel,
-                r.SeverityScore, r.CreatedAt
+                r.Id,
+                r.Latitude,
+                r.Longitude,
+                r.PredictedClass,
+                r.SeverityLabel,
+                r.SeverityScore,
+                r.CreatedAt,
+                r.Governorate,
+                r.Area
             }).ToListAsync();
 
-        // حساب عدد البلاغات القريبة لكل نقطة (radius 500m)
         var result = reports.Select(r => new MapPointDto(
             r.Id,
             r.Latitude,
@@ -62,27 +66,25 @@ public class ReportRepository : IReportRepository
             r.SeverityScore,
             CountNearby(reports.Select(x => (x.Latitude, x.Longitude)).ToList(),
                         r.Latitude, r.Longitude),
+            r.Governorate,
+            r.Area,
             r.CreatedAt
         ));
 
         return result;
     }
 
-    public async Task<int> GetReportCountInAreaAsync(double lat, double lng, double radiusKm = 0.5)
-    {
-        // Haversine approximation في SQL
-        const double deg2rad = Math.PI / 180.0;
-        return await _db.Reports.CountAsync(r =>
+    public async Task<int> GetReportCountInAreaAsync(double lat, double lng, double radiusKm = 0.5) =>
+        await _db.Reports.CountAsync(r =>
             Math.Abs(r.Latitude - lat) < radiusKm / 111.0 &&
             Math.Abs(r.Longitude - lng) < radiusKm / 111.0);
-    }
 
     public async Task<DashboardStatsDto> GetDashboardStatsAsync()
     {
-        var total    = await _db.Reports.CountAsync();
-        var pending  = await _db.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
+        var total = await _db.Reports.CountAsync();
+        var pending = await _db.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
         var resolved = await _db.Reports.CountAsync(r => r.Status == ReportStatus.Resolved);
-        var highSev  = await _db.Reports.CountAsync(r => r.SeverityScore >= 3);
+        var highSev = await _db.Reports.CountAsync(r => r.SeverityScore >= 3);
 
         var byClass = await _db.Reports
             .Where(r => r.PredictedClass != null)
@@ -97,13 +99,19 @@ public class ReportRepository : IReportRepository
             .Select(g => new { Day = g.Key.ToString("yyyy-MM-dd"), Count = g.Count() })
             .ToDictionaryAsync(x => x.Day, x => x.Count);
 
-        return new DashboardStatsDto(total, pending, resolved, highSev, byClass, byDay);
+        // إحصائيات لكل محافظة
+        var byGov = await _db.Reports
+            .Where(r => r.Governorate != null)
+            .GroupBy(r => r.Governorate!)
+            .Select(g => new { Gov = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Gov, x => x.Count);
+
+        return new DashboardStatsDto(total, pending, resolved, highSev, byClass, byDay, byGov);
     }
 
-    // helper — بيحسب عدد النقاط القريبة
     private static int CountNearby(List<(double lat, double lng)> all, double lat, double lng)
     {
-        const double threshold = 0.005; // ~500m
+        const double threshold = 0.005;
         return all.Count(p => Math.Abs(p.lat - lat) < threshold && Math.Abs(p.lng - lng) < threshold);
     }
 }

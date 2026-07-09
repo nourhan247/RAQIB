@@ -1,4 +1,5 @@
-const BASE = "https://localhost:7212/api";
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5179";
+export const BASE = `${BASE_URL}/api`;
 
 const getToken = () => localStorage.getItem("raqib_token");
 
@@ -14,11 +15,17 @@ async function request(path, opts = {}) {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(
-      Array.isArray(err) ? err.join("، ") :
-      err.message || err.title || "حدث خطأ"
-    );
+    const errPayload = await res.json().catch(() => ({ message: res.statusText }));
+    const message = Array.isArray(errPayload)
+      ? errPayload.join("، ")
+      : errPayload.message || errPayload.title || "حدث خطأ";
+
+    const error = new Error(message);
+    error.status = res.status;
+    error.payload = errPayload;
+    error.needsVerification = Boolean(errPayload.needsVerification);
+    error.userId = errPayload.userId;
+    throw error;
   }
   return res.json();
 }
@@ -49,6 +56,12 @@ export const api = {
   getMyReports: () => request("/reports/my"),
   getMapPoints: () => request("/reports/map"),
   getReport:    (id) => request(`/reports/${id}`),
+  sendChat:     (reportId, userMessage) =>
+    request("/reports/chat", {
+      method: "POST",
+      body: JSON.stringify({ reportId, userMessage }),
+    }),
+  getChatHistory: (reportId) => request(`/reports/chat/${reportId}`),
 
   // ── Admin ─────────────────────────────────────────────────
   getDashboard: () => request("/admin/dashboard"),

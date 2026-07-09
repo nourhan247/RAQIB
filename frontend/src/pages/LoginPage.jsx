@@ -18,7 +18,16 @@ export default function LoginPage() {
       const data = await login(form.email, form.password);
       navigate(data.role === "Admin" ? "/admin" : "/dashboard");
     } catch (err) {
-      setError(err.message);
+      if (err?.needsVerification) {
+        navigate("/verify-otp", {
+          state: {
+            userId: err.userId,
+            email: form.email,
+          },
+        });
+        return;
+      }
+      setError(err.message || "حدث خطأ");
     } finally {
       setLoading(false);
     }

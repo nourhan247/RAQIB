@@ -54,17 +54,20 @@ namespace RAQIB_API
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
-                                                  Encoding.UTF8.GetBytes(jwtKey))
+                        Encoding.UTF8.GetBytes(jwtKey))
                 };
-                // SignalR JWT support
+
                 opts.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = ctx =>
                     {
                         var token = ctx.Request.Query["access_token"];
-                        if (!string.IsNullOrEmpty(token) &&
-                            ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+
+                        if (!string.IsNullOrEmpty(token))
+                        {
                             ctx.Token = token;
+                        }
+
                         return Task.CompletedTask;
                     }
                 };

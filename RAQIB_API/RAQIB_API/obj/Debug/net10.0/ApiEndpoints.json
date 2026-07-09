@@ -133,6 +133,21 @@
         "IsRequired": false
       },
       {
+        "Name": "Governorate",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Area",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Street",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
         "Name": "Address",
         "Type": "System.String",
         "IsRequired": false
@@ -177,6 +192,38 @@
       {
         "Name": "status",
         "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RAQIB.API.Controllers.ReportsController",
+    "Method": "Chat",
+    "RelativePath": "api/Reports/chat",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "RAQIB.Core.DTOs.SendChatDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RAQIB.API.Controllers.ReportsController",
+    "Method": "GetChatHistory",
+    "RelativePath": "api/Reports/chat/{reportId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "reportId",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],
