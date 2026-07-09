@@ -163,15 +163,16 @@ namespace RAQIB_API
             }
 
             // ── Middleware ───────────────────────────────────────────────
+            app.UseOpenApi();
+            app.UseSwaggerUi(c =>
+            {
+                c.DocumentTitle = "RAQIB API";
+                c.Path = "/swagger";
+            });
+            
             if (app.Environment.IsDevelopment())
             {
-                // NSwag Swagger UI
-                app.UseOpenApi();
-                app.UseSwaggerUi(c =>
-                {
-                    c.DocumentTitle = "RAQIB API";
-                    c.Path = "/swagger";
-                });
+                // Development-only code
             }
 
             app.UseStaticFiles();
