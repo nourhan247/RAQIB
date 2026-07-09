@@ -39,8 +39,17 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        // تأكد إن الإيميل مش موجود
-        if (await _users.FindByEmailAsync(dto.Email) != null)
+        Console.WriteLine("========== REGISTER ==========");
+        Console.WriteLine($"Email: {dto.Email}");
+        Console.WriteLine($"Full Name: {dto.FullName}");
+        Console.WriteLine("==============================");
+        var existing = await _users.FindByEmailAsync(dto.Email);
+
+        Console.WriteLine(existing == null
+            ? "User NOT found"
+            : $"User FOUND: {existing.Email}");
+
+        if (existing != null)
             return BadRequest(new[] { "البريد الإلكتروني مستخدم بالفعل" });
 
         var user = new ApplicationUser
