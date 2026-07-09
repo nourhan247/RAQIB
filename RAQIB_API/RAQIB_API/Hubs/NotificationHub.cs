@@ -34,4 +34,8 @@ public class NotificationService
     // بيبعت للكل تحديث الخريطة
     public async Task BroadcastMapUpdateAsync(object mapPoint) =>
         await _hub.Clients.All.SendAsync("MapUpdate", mapPoint);
+
+    // ── NEW: بيبعت لليوزر المحدد إشعار (يظهر في الـ notification bell) ──
+    public async Task SendNotificationAsync(string userId, object payload) =>
+        await _hub.Clients.User(userId).SendAsync("Notification", payload);
 }

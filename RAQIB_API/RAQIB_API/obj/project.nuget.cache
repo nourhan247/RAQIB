@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "rh2J5+lwrQg=",
+  "dgSpecHash": "UuBjgWdfDUI=",
   "success": true,
   "projectFilePath": "D:\\RAQIB\\Raqib\\RAQIB_API\\RAQIB_API\\RAQIB_API.csproj",
   "expectedPackageFiles": [
@@ -57,6 +57,7 @@
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\nswag.core.yaml\\14.2.0\\nswag.core.yaml.14.2.0.nupkg.sha512",
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\nswag.generation\\14.2.0\\nswag.generation.14.2.0.nupkg.sha512",
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\nswag.generation.aspnetcore\\14.2.0\\nswag.generation.aspnetcore.14.2.0.nupkg.sha512",
+    "C:\\Users\\AL-Handasia\\.nuget\\packages\\questpdf\\2026.7.0\\questpdf.2026.7.0.nupkg.sha512",
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\scalar.aspnetcore\\2.16.7\\scalar.aspnetcore.2.16.7.nupkg.sha512",
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\swashbuckle.aspnetcore\\10.2.3\\swashbuckle.aspnetcore.10.2.3.nupkg.sha512",
     "C:\\Users\\AL-Handasia\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\10.2.3\\swashbuckle.aspnetcore.swagger.10.2.3.nupkg.sha512",

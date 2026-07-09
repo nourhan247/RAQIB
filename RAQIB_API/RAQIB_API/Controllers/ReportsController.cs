@@ -19,18 +19,31 @@ public class ReportsController : ControllerBase
     private readonly IImageStorageService _storage;
     private readonly IEmailService _email;
     private readonly NotificationService _notify;
+    private readonly INotificationRepository _notifications;
     private readonly IConfiguration _config;
+
+    private static readonly Dictionary<string, string> ClassAr = new()
+    {
+        ["Damaged Road"] = "طريق تالف",
+        ["Normal Road"] = "طريق سليم",
+        ["Damaged Home"] = "مبنى متضرر",
+        ["Normal Building"] = "مباني سليمة",
+        ["Big Trash"] = "نفايات كبيرة",
+        ["Small Trash"] = "نفايات صغيرة",
+    };
 
     public ReportsController(
         IReportRepository repo, IAiAgentService ai,
         IImageStorageService storage, IEmailService email,
-        NotificationService notify, IConfiguration config)
+        NotificationService notify, INotificationRepository notifications,
+        IConfiguration config)
     {
         _repo = repo;
         _ai = ai;
         _storage = storage;
         _email = email;
         _notify = notify;
+        _notifications = notifications;
         _config = config;
     }
 
@@ -265,6 +278,7 @@ public class ReportsController : ControllerBase
     }
 
     // ── PATCH /api/reports/{id}/status ──────────────────────
+    // بيغير حالة البلاغ. لو اتحول لـ Resolved: بيتبعت إشعار فوري + إيميل لليوزر
     [HttpPatch("{id:int}/status")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
@@ -272,15 +286,64 @@ public class ReportsController : ControllerBase
         var report = await _repo.GetByIdAsync(id);
         if (report == null) return NotFound();
 
-        if (Enum.TryParse<ReportStatus>(status, out var parsed))
+        if (!Enum.TryParse<ReportStatus>(status, out var parsed))
+            return BadRequest("حالة غير صحيحة");
+
+        var previousStatus = report.Status;
+        report.Status = parsed;
+        if (parsed == ReportStatus.Resolved)
+            report.ResolvedAt = DateTime.UtcNow;
+
+        await _repo.UpdateAsync(report);
+
+        // ── إشعار وإيميل عند تحويل البلاغ لـ "تم الحل" ──
+        if (parsed == ReportStatus.Resolved && previousStatus != ReportStatus.Resolved)
         {
-            report.Status = parsed;
-            if (parsed == ReportStatus.Resolved)
-                report.ResolvedAt = DateTime.UtcNow;
-            await _repo.UpdateAsync(report);
-            return Ok();
+            await NotifyResolutionAsync(report);
         }
-        return BadRequest("حالة غير صحيحة");
+
+        return Ok();
+    }
+
+    private async Task NotifyResolutionAsync(Report report)
+    {
+        var classAr = report.PredictedClass != null && ClassAr.TryGetValue(report.PredictedClass, out var ar)
+            ? ar
+            : report.PredictedClass ?? "المشكلة المبلغ عنها";
+
+        var location = string.Join("، ", new[] { report.Street, report.Area, report.Governorate }
+            .Where(part => !string.IsNullOrWhiteSpace(part)));
+        if (string.IsNullOrWhiteSpace(location)) location = report.Address ?? "الموقع المسجل";
+
+        var resolvedAt = (report.ResolvedAt ?? DateTime.UtcNow);
+
+        var friendlyMessage =
+            $"تم حل بلاغك بخصوص \"{classAr}\" في {location} بتاريخ {resolvedAt:yyyy-MM-dd}. " +
+            "لقد قام فريقنا المتخصص بإنجاز العمل المطلوب. شكراً جزيلاً لمساهمتك في الحفاظ على مجتمعنا نظيفاً وآمناً. نقدّر تعاونك حقاً. 🌿";
+
+        // 1. حفظ الإشعار في DB (عشان يظهر في جرس الإشعارات حتى لو اليوزر مش متصل دلوقتي)
+        var notification = new Notification
+        {
+            UserId = report.UserId,
+            ReportId = report.Id,
+            Title = "تم حل بلاغك ✅",
+            Message = friendlyMessage,
+            Type = "ReportResolved",
+        };
+        await _notifications.CreateAsync(notification);
+
+        // 2. إشعار فوري عبر SignalR لجرس الإشعارات
+        await _notify.SendNotificationAsync(report.UserId, new NotificationDto(
+            notification.Id, notification.ReportId, notification.Title,
+            notification.Message, notification.Type, notification.IsRead, notification.CreatedAt));
+
+        // 3. إيميل تأكيد لليوزر (لو الإيميل موجود)
+        var toEmail = report.User?.Email;
+        var userName = report.User?.FullName ?? "";
+        if (!string.IsNullOrWhiteSpace(toEmail))
+        {
+            _ = Task.Run(() => _email.SendResolutionEmailAsync(report, toEmail!, userName));
+        }
     }
 
     private static ReportResponseDto MapToDto(Report r) => new(

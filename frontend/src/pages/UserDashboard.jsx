@@ -8,6 +8,7 @@ import "leaflet/dist/leaflet.css";
 import { api } from "../services/api";
 import { useSignalR } from "../services/useSignalR";
 import { useAuth } from "../services/AuthContext";
+import NotificationBell from "../components/NotificationBell";
 
 // ── Brand tokens ─────────────────────────────────────────────
 const C = {
@@ -108,12 +109,18 @@ export default function UserDashboard() {
   const [hasChatted, setHasChatted] = useState(false);
   const [activeTab, setActiveTab]   = useState("report");
 
+  // ── Notifications (bell) ──────────────────────────────────
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const chatEndRef  = useRef(null);
   const searchTimer = useRef(null);
 
   useEffect(() => {
     api.getMapPoints().then(setMapPoints).catch(() => {});
     api.getMyReports().then(setHistory).catch(() => {});
+    api.getNotifications().then(setNotifications).catch(() => {});
+    api.getUnreadNotificationCount().then((r) => setUnreadCount(r.count)).catch(() => {});
   }, []);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -143,7 +150,27 @@ export default function UserDashboard() {
 
   const onNewReport = useCallback(() => {}, []);
 
-  useSignalR(onAiReply, onMapUpdate, onNewReport);
+  // ── NEW: real-time notification (e.g. "report resolved") ──
+  const onNotification = useCallback((payload) => {
+    setNotifications(p => [payload, ...p]);
+    setUnreadCount(p => p + 1);
+    // refresh history so the resolved status shows up immediately
+    api.getMyReports().then(setHistory).catch(() => {});
+  }, []);
+
+  useSignalR(onAiReply, onMapUpdate, onNewReport, onNotification);
+
+  const markNotificationRead = useCallback(async (id) => {
+    setNotifications(p => p.map(n => (n.id === id ? { ...n, isRead: true } : n)));
+    setUnreadCount(p => Math.max(0, p - 1));
+    try { await api.markNotificationRead(id); } catch {}
+  }, []);
+
+  const markAllNotificationsRead = useCallback(async () => {
+    setNotifications(p => p.map(n => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+    try { await api.markAllNotificationsRead(); } catch {}
+  }, []);
 
   // ── Location search (debounced) ────────────────────────────
   const handleSearchChange = (val) => {
@@ -382,6 +409,12 @@ export default function UserDashboard() {
           <span style={{ display:"flex",alignItems:"center",gap:8,fontSize:14,color:C.gray }}>
             <span className="brand-dot"/> أهلاً، {user?.fullName}
           </span>
+          <NotificationBell
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onMarkRead={markNotificationRead}
+            onMarkAllRead={markAllNotificationsRead}
+          />
           <button onClick={logout} className="rq-btn-out">خروج</button>
         </div>
       </nav>

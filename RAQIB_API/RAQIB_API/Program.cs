@@ -73,15 +73,29 @@ namespace RAQIB_API
                 };
             });
 
-            // ── Services ─────────────────────────────────────────────────
+                        // ── Services ─────────────────────────────────────────────────
+
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
+
             builder.Services.AddScoped<IEmailService, EmailService>();
+
             builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
+
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            builder.Services.AddScoped<IReportPdfService, ReportPdfService>();
+
             builder.Services.AddSingleton<NotificationService>();
 
             builder.Services.AddHttpClient<IAiAgentService, AiAgentService>(client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration["AiAgent:BaseUrl"]!);
+                var baseUrl = builder.Configuration["AiAgent:BaseUrl"];
+
+                if (!string.IsNullOrEmpty(baseUrl))
+                {
+                    client.BaseAddress = new Uri(baseUrl);
+                }
+
                 client.Timeout = TimeSpan.FromSeconds(60);
             });
 
@@ -121,7 +135,7 @@ namespace RAQIB_API
                 config.OperationProcessors.Add(
                     new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
             });
-
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
             var app = builder.Build();
 
             // ── Seed Roles + Admin ───────────────────────────────────────

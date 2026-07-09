@@ -71,4 +71,37 @@ export const api = {
     request(`/reports/${id}/status`, { method: "PATCH", body: JSON.stringify(status) }),
   toggleUser:   (id) =>
     request(`/admin/users/${id}/toggle`, { method: "PATCH" }),
+
+  // ── Notifications (NEW) ──────────────────────────────────
+  getNotifications: () => request("/notifications"),
+  getUnreadNotificationCount: () => request("/notifications/unread-count"),
+  markNotificationRead: (id) =>
+    request(`/notifications/${id}/read`, { method: "PATCH" }),
+  markAllNotificationsRead: () =>
+    request("/notifications/read-all", { method: "PATCH" }),
+
+  // ── Admin PDF analytics report (NEW) ─────────────────────
+  // triggers a real browser download of the generated PDF
+  downloadReportsPdf: async ({ governorate, fromDate, toDate } = {}) => {
+    const qs = new URLSearchParams();
+    if (governorate) qs.append("governorate", governorate);
+    if (fromDate) qs.append("fromDate", fromDate);
+    if (toDate) qs.append("toDate", toDate);
+
+    const res = await fetch(`${BASE}/admin/reports/pdf?${qs.toString()}`, {
+      headers: headers(),
+    });
+    if (!res.ok) {
+      throw new Error("تعذر توليد تقرير الـ PDF");
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `RAQIB-Report-${new Date().toISOString().slice(0, 10)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };

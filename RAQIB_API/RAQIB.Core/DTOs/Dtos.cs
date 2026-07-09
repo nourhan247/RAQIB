@@ -88,3 +88,21 @@ public record DashboardStatsDto(
     Dictionary<string, int> CountByDay,
     Dictionary<string, int> CountByGovernorate   // للـ Power BI
 );
+
+// ── Notifications (NEW) ────────────────────────────────────────
+public record NotificationDto(
+    int Id,
+    int? ReportId,
+    string Title,
+    string Message,
+    string Type,
+    bool IsRead,
+    DateTime CreatedAt
+);
+
+// ── PDF Analytics Report (NEW) ─────────────────────────────────
+public record PdfReportRequestDto(
+    string? Governorate,   // null/"" = all governorates
+    DateTime? FromDate,
+    DateTime? ToDate
+);

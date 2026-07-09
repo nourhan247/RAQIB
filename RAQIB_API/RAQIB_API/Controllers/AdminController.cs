@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RAQIB.Core.DTOs;
 using RAQIB.Core.Interfaces;
 using RAQIB.Core.Models;
 
@@ -13,11 +14,13 @@ public class AdminController : ControllerBase
 {
     private readonly IReportRepository _repo;
     private readonly UserManager<ApplicationUser> _users;
+    private readonly IReportPdfService _pdf;
 
-    public AdminController(IReportRepository repo, UserManager<ApplicationUser> users)
+    public AdminController(IReportRepository repo, UserManager<ApplicationUser> users, IReportPdfService pdf)
     {
         _repo = repo;
         _users = users;
+        _pdf = pdf;
     }
 
     // GET /api/admin/dashboard
@@ -85,5 +88,20 @@ public class AdminController : ControllerBase
         user.IsActive = !user.IsActive;
         await _users.UpdateAsync(user);
         return Ok(new { user.IsActive });
+    }
+
+    // ── NEW: GET /api/admin/reports/pdf?governorate=&fromDate=&toDate= ──
+    // بيولّد تقرير PDF احترافي بالتحليلات، ممكن يتصفّى حسب المحافظة و/أو فترة زمنية
+    [HttpGet("reports/pdf")]
+    public async Task<IActionResult> DownloadPdfReport(
+        [FromQuery] string? governorate,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate)
+    {
+        var request = new PdfReportRequestDto(governorate, fromDate, toDate);
+        var bytes = await _pdf.GeneratePdfReportAsync(request);
+
+        var fileName = $"RAQIB-Report-{DateTime.UtcNow:yyyyMMdd-HHmm}.pdf";
+        return File(bytes, "application/pdf", fileName);
     }
 }

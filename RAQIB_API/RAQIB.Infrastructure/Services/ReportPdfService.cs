@@ -213,18 +213,30 @@ public class ReportPdfService : IReportPdfService
     private void StatusStackedBar(IContainer container, Stats s)
     {
         var total = Math.Max(s.Total, 1);
-        container.Height(28).Row(row =>
+
+        container.Column(col =>
         {
-            if (s.Resolved > 0) row.RelativeItem(s.Resolved).Background(Success);
-            if (s.InProgress > 0) row.RelativeItem(s.InProgress).Background(OrangeDark);
-            if (s.Pending > 0) row.RelativeItem(s.Pending).Background(Orange);
-            if (s.Rejected > 0) row.RelativeItem(s.Rejected).Background(Critical);
-            var accounted = s.Resolved + s.InProgress + s.Pending + s.Rejected;
-            if (accounted < total) row.RelativeItem(total - accounted).Background(NavySecondary);
-        });
-        container.Column(c =>
-        {
-            c.Item().PaddingTop(6).Row(legend =>
+            col.Item().Height(28).Row(row =>
+            {
+                if (s.Resolved > 0)
+                    row.RelativeItem(s.Resolved).Background(Success);
+
+                if (s.InProgress > 0)
+                    row.RelativeItem(s.InProgress).Background(OrangeDark);
+
+                if (s.Pending > 0)
+                    row.RelativeItem(s.Pending).Background(Orange);
+
+                if (s.Rejected > 0)
+                    row.RelativeItem(s.Rejected).Background(Critical);
+
+                var accounted = s.Resolved + s.InProgress + s.Pending + s.Rejected;
+
+                if (accounted < total)
+                    row.RelativeItem(total - accounted).Background(NavySecondary);
+            });
+
+            col.Item().PaddingTop(6).Row(legend =>
             {
                 legend.RelativeItem().Element(e => LegendDot(e, Success, "تم الحل"));
                 legend.RelativeItem().Element(e => LegendDot(e, OrangeDark, "قيد التنفيذ"));
@@ -255,9 +267,15 @@ public class ReportPdfService : IReportPdfService
                     row.ConstantItem(60).Text(label).FontSize(10).FontColor(Gray);
                     row.RelativeItem().Height(16).Background("#132B4A").Row(barRow =>
                     {
-                        var ratio = (float)count / max;
-                        if (ratio > 0) barRow.RelativeItem(ratio).Background(color);
-                        barRow.RelativeItem(1 - ratio);
+                       var ratio = (float)count / max;
+                        ratio = Math.Clamp(ratio, 0.001f, 1f);
+
+                        barRow.RelativeItem(ratio).Background(color);
+
+                        if (ratio < 1f)
+                        {
+                            barRow.RelativeItem(1f - ratio);
+                        }
                     });
                     row.ConstantItem(36).AlignRight().Text(count.ToString()).FontSize(10).FontColor(White);
                 });
@@ -286,32 +304,47 @@ public class ReportPdfService : IReportPdfService
     }
 
     private void TopBarList(IContainer container, List<(string Name, int Count)> data)
+{
+    if (data.Count == 0)
     {
-        if (data.Count == 0)
-        {
-            container.Text("لا توجد بيانات كافية لهذا النطاق.").FontSize(11).FontColor(Gray);
-            return;
-        }
-        var max = Math.Max(data.Max(x => x.Count), 1);
-        container.Column(col =>
-        {
-            foreach (var (name, count) in data)
-            {
-                col.Item().PaddingBottom(8).Row(row =>
-                {
-                    row.ConstantItem(90).Text(name).FontSize(10).FontColor(Gray);
-                    row.RelativeItem().Height(16).Background("#132B4A").Row(barRow =>
-                    {
-                        var ratio = (float)count / max;
-                        if (ratio > 0) barRow.RelativeItem(ratio).Background(Orange);
-                        barRow.RelativeItem(1 - ratio);
-                    });
-                    row.ConstantItem(30).AlignRight().Text(count.ToString()).FontSize(10).FontColor(White);
-                });
-            }
-        });
+        container.Text("لا توجد بيانات كافية لهذا النطاق.")
+            .FontSize(11)
+            .FontColor(Gray);
+        return;
     }
 
+    var max = Math.Max(data.Max(x => x.Count), 1);
+
+    container.Column(col =>
+    {
+        foreach (var (name, count) in data)
+        {
+            col.Item().PaddingBottom(8).Row(row =>
+            {
+                row.ConstantItem(90).Text(name).FontSize(10).FontColor(Gray);
+
+                row.RelativeItem().Height(16).Background("#132B4A").Row(barRow =>
+                {
+                    var ratio = (float)count / max;
+                    ratio = Math.Clamp(ratio, 0.001f, 1f);
+
+                    barRow.RelativeItem(ratio).Background(Orange);
+
+                    if (ratio < 1f)
+                    {
+                        barRow.RelativeItem(1f - ratio);
+}
+                });
+
+                row.ConstantItem(30)
+                    .AlignRight()
+                    .Text(count.ToString())
+                    .FontSize(10)
+                    .FontColor(White);
+            });
+        }
+    });
+}
     private void DataTable(IContainer container, string firstColumnTitle, List<(string Name, int Count)> data, int total)
     {
         container.Table(table =>

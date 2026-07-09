@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RAQIB_API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+50dfa0e0b7b9e9315d46ed128844ed8f68d90938")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da2c255b483f51e18980430b64f4dad30c229ea4")]
 [assembly: System.Reflection.AssemblyProductAttribute("RAQIB_API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RAQIB_API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

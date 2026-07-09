@@ -3,7 +3,7 @@ import * as signalR from "@microsoft/signalr";
 import { BASE_URL } from "./api";
 
 
-export function useSignalR(onAiReply, onMapUpdate, onNewReport) {
+export function useSignalR(onAiReply, onMapUpdate, onNewReport, onNotification) {
   const connRef = useRef(null);
 
   const connect = useCallback(async () => {
@@ -28,6 +28,7 @@ export function useSignalR(onAiReply, onMapUpdate, onNewReport) {
     conn.off("AiReply");
     conn.off("MapUpdate");
     conn.off("NewReport");
+    conn.off("Notification");
 
 
     conn.on("AiReply", (payload) => {
@@ -43,6 +44,11 @@ export function useSignalR(onAiReply, onMapUpdate, onNewReport) {
       onNewReport(payload);
     });
 
+    // ── NEW: notification bell (e.g. "report resolved") ──
+    conn.on("Notification", (payload) => {
+      if (typeof onNotification === "function") onNotification(payload);
+    });
+
 
     await conn.start();
 
@@ -50,7 +56,7 @@ export function useSignalR(onAiReply, onMapUpdate, onNewReport) {
 
     connRef.current = conn;
 
-  }, [onAiReply, onMapUpdate, onNewReport]);
+  }, [onAiReply, onMapUpdate, onNewReport, onNotification]);
 
 
   useEffect(() => {

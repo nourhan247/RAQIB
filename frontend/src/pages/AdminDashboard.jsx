@@ -31,10 +31,12 @@ import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import EmergencyRoundedIcon from "@mui/icons-material/EmergencyRounded";
 import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import { api } from "../services/api";
 import { useSignalR } from "../services/useSignalR";
 import { useAuth } from "../services/AuthContext";
 import DashboardCard from "../components/DashboardCard";
+import PdfReportModal from "../components/PdfReportModal";
 import {
   CategoryBarChart,
   GovernorateBarChart,
@@ -45,6 +47,8 @@ import {
 } from "../components/AnalyticsCharts";
 
 const C = { navySecondary: "#27446E", orange: "#F28C28", orangeDark: "#E57200", white: "#FFFFFF", offWhite: "#FCFDFF", gray: "#C8CDD6", critical: "#D1453B" };
+const STATUS_AR = { Pending: "قيد الانتظار", InProgress: "قيد التنفيذ", Resolved: "تم الحل", Rejected: "مرفوض" };
+const STATUS_ORDER = ["Pending", "InProgress", "Resolved", "Rejected"];
 const SEV_COLOR = { 0: C.navySecondary, 1: C.orange, 2: C.orangeDark, 3: C.critical };
 const CLASS_AR = { "Damaged Road": "طريق تالف", "Normal Road": "طريق سليم", "Damaged Home": "مبنى متضرر", "Normal Building": "مباني سليمة", "Big Trash": "نفايات كبيرة", "Small Trash": "نفايات صغيرة", "BIG TRASH": "نفايات كبيرة", "SMALL TRASH": "نفايات صغيرة", "NORMAL ROAD": "طريق سليم", "DAMAGED ROAD": "طريق تالف", "NORMAL BUILDINGS": "مباني سليمة", "DAMAGED HOME": "مبنى متضرر" };
 
@@ -105,6 +109,8 @@ export default function AdminDashboard() {
   const [loadError, setLoadError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ governorate: "", area: "", disasterType: "", severity: "", status: "", fromDate: "", toDate: "" });
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(() => new Set());
   const HIGHLIGHT_MS = 6000;
 
   const load = useCallback(async () => {
@@ -259,6 +265,28 @@ export default function AdminDashboard() {
 
   const resetFilters = () => setFilters({ governorate: "", area: "", disasterType: "", severity: "", status: "", fromDate: "", toDate: "" });
 
+  // ── NEW: change a report's status. Backend auto-notifies + emails the user when set to Resolved ──
+  const handleStatusChange = async (reportId, newStatus) => {
+    setStatusUpdating((prev) => new Set(prev).add(reportId));
+    try {
+      await api.updateStatus(reportId, newStatus);
+      setReports((prev) => prev.map((r) => (r.id === reportId ? { ...r, status: newStatus } : r)));
+      if (newStatus === "Resolved") {
+        pushToast(`✅ تم حل البلاغ #${reportId} — تم إشعار المستخدم وإرسال إيميل تأكيد.`);
+      } else {
+        pushToast(`تم تحديث حالة البلاغ #${reportId} إلى "${STATUS_AR[newStatus] || newStatus}"`);
+      }
+    } catch {
+      pushToast(`⚠️ تعذر تحديث حالة البلاغ #${reportId}`);
+    } finally {
+      setStatusUpdating((prev) => {
+        const n = new Set(prev);
+        n.delete(reportId);
+        return n;
+      });
+    }
+  };
+
   return (
     <div className="raqib-admin">
       <style>{`
@@ -333,6 +361,9 @@ export default function AdminDashboard() {
               <span style={{ position: "absolute", top: -4, right: -6, width: 16, height: 16, borderRadius: "50%", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", background: C.critical, color: "white" }}>{alerts.length}</span>
             </div>
           )}
+          <button onClick={() => setPdfModalOpen(true)} className="rq-btn-out" style={{ display: "flex", alignItems: "center", gap: 6, color: C.orange, border: "1px solid rgba(242,140,40,.3)", background: "rgba(242,140,40,.08)" }}>
+            <PictureAsPdfRoundedIcon sx={{ fontSize: 16 }} /> تحميل تقرير PDF
+          </button>
           <button onClick={logout} className="rq-btn-out">خروج</button>
         </div>
       </nav>
@@ -506,7 +537,26 @@ export default function AdminDashboard() {
                     <td style={{ color: C.gray }}>{CLASS_AR[r.predictedClass] || r.predictedClass || "—"}</td>
                     <td style={{ color: C.gray }}>{r.damagePercentage != null ? `${r.damagePercentage.toFixed(1)}%` : "—"}</td>
                     <td><span className="rq-pill rq-pill-sev" style={{ background: `${SEV_COLOR[r.severityScore]}22`, color: SEV_COLOR[r.severityScore] }}>{r.severityLabel || "—"}</span></td>
-                    <td><span className="rq-pill rq-pill-status">{r.status}</span></td>
+                    <td>
+                      <Select
+                        size="small"
+                        value={r.status || "Pending"}
+                        disabled={statusUpdating.has(r.id)}
+                        onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                        sx={{
+                          fontSize: 12.5,
+                          color: "#fff",
+                          minWidth: 128,
+                          background: "rgba(200,205,214,.08)",
+                          "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(200,205,214,.2)" },
+                          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(242,140,40,.4)" },
+                        }}
+                      >
+                        {STATUS_ORDER.map((s) => (
+                          <MenuItem key={s} value={s} sx={{ fontSize: 13 }}>{STATUS_AR[s]}</MenuItem>
+                        ))}
+                      </Select>
+                    </td>
                     <td style={{ fontSize: 12, color: "rgba(200,205,214,.5)" }}>{new Date(r.createdAt).toLocaleDateString("ar-EG")}</td>
                   </tr>
                 ))}
@@ -515,6 +565,12 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      <PdfReportModal
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        governorateOptions={governorateOptions}
+      />
     </div>
   );
 }

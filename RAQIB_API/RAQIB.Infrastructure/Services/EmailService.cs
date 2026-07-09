@@ -11,6 +11,16 @@ public class EmailService : IEmailService
 {
     private readonly IConfiguration _config;
 
+    private static readonly Dictionary<string, string> ClassAr = new()
+    {
+        ["Damaged Road"] = "طريق تالف",
+        ["Normal Road"] = "طريق سليم",
+        ["Damaged Home"] = "مبنى متضرر",
+        ["Normal Building"] = "مباني سليمة",
+        ["Big Trash"] = "نفايات كبيرة",
+        ["Small Trash"] = "نفايات صغيرة",
+    };
+
     public EmailService(IConfiguration config) => _config = config;
 
     // ── OTP Email ─────────────────────────────────────────────
@@ -67,6 +77,55 @@ public class EmailService : IEmailService
             """;
 
         await SendAsync(adminEmail, "🚨 RAQIB — تنبيه بلاغ عالي الخطورة", body);
+    }
+
+    // ── NEW: Resolution confirmation email ────────────────────
+    public async Task SendResolutionEmailAsync(Report report, string toEmail, string userName)
+    {
+        var classAr = report.PredictedClass != null && ClassAr.TryGetValue(report.PredictedClass, out var ar)
+            ? ar
+            : report.PredictedClass ?? "المشكلة المبلغ عنها";
+
+        var location = string.Join("، ", new[] { report.Street, report.Area, report.Governorate }
+            .Where(part => !string.IsNullOrWhiteSpace(part)));
+        if (string.IsNullOrWhiteSpace(location)) location = report.Address ?? "—";
+
+        var resolvedAt = report.ResolvedAt ?? DateTime.UtcNow;
+        var greetingName = string.IsNullOrWhiteSpace(userName) ? "" : $" {userName}";
+
+        var body = $"""
+            <div style="font-family:Arial;direction:rtl;padding:32px;background:#0b1c33;color:#fff;border-radius:16px;max-width:520px;margin:auto">
+              <div style="text-align:center;margin-bottom:24px">
+                <span style="font-size:40px">✅</span>
+                <h1 style="background:linear-gradient(135deg,#F28C28,#E57200);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0;letter-spacing:2px">
+                  RAQIB
+                </h1>
+              </div>
+
+              <h2 style="color:#e2e8f0;margin-bottom:8px">أهلاً{greetingName} 👋</h2>
+              <p style="color:#C8CDD6;line-height:1.8;margin-bottom:24px">
+                تم حل بلاغك المُقدَّم بنجاح. لقد قام فريقنا المتخصص بإنجاز العمل المطلوب.
+                شكراً جزيلاً لمساهمتك في الحفاظ على مجتمعنا نظيفاً وآمناً — نقدّر تعاونك حقاً. 🌿
+              </p>
+
+              <table style="width:100%;border-collapse:collapse;background:rgba(39,68,110,.28);border:1px solid rgba(200,205,214,.16);border-radius:12px;overflow:hidden">
+                <tr><td style="padding:12px 16px;color:#C8CDD6">رقم البلاغ</td>
+                    <td style="padding:12px 16px;font-weight:bold;color:#fff">#{report.Id}</td></tr>
+                <tr><td style="padding:12px 16px;color:#C8CDD6">نوع المشكلة</td>
+                    <td style="padding:12px 16px;font-weight:bold;color:#F28C28">{classAr}</td></tr>
+                <tr><td style="padding:12px 16px;color:#C8CDD6">الموقع</td>
+                    <td style="padding:12px 16px;color:#fff">{location}</td></tr>
+                <tr><td style="padding:12px 16px;color:#C8CDD6">تاريخ الحل</td>
+                    <td style="padding:12px 16px;color:#fff">{resolvedAt:yyyy-MM-dd HH:mm} UTC</td></tr>
+              </table>
+
+              <p style="color:#64748b;font-size:13px;text-align:center;margin-top:24px">
+                شكراً لثقتك في RAQIB — معاً نبني مجتمعاً أفضل.
+              </p>
+            </div>
+            """;
+
+        await SendAsync(toEmail, "✅ RAQIB — تم حل بلاغك بنجاح", body);
     }
 
     // ── Send ─────────────────────────────────────────────────

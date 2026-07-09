@@ -25,6 +25,9 @@ public interface IEmailService
 {
     Task SendOtpEmailAsync(string toEmail, string fullName, string otp);
     Task SendHighSeverityAlertAsync(Report report, string adminEmail);
+
+    // ── NEW: sent when an admin marks a report as Resolved ──
+    Task SendResolutionEmailAsync(Report report, string toEmail, string userName);
 }
 
 public interface IImageStorageService
@@ -32,3 +35,5 @@ public interface IImageStorageService
     Task<string> SaveImageAsync(Stream imageStream, string fileName);
     void DeleteImage(string imagePath);
 }
+
+
