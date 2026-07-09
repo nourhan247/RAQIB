@@ -26,9 +26,17 @@ CLASS_NAMES = [
 ]
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-print("Before loading model...")
-model = tf.keras.models.load_model(MODEL_PATH)
-print("Model loaded successfully!")
+model = None
+
+def get_model():
+    global model
+
+    if model is None:
+        print("Loading model...")
+        model = tf.keras.models.load_model(MODEL_PATH)
+        print("Model loaded successfully!")
+
+    return model
 
 
 def resolve_path(image_path: str | os.PathLike) -> str:
@@ -365,6 +373,7 @@ def predict_image(image_path):
     resolved_path = resolve_path(image_path)
     image = preprocess_image(resolved_path)
 
+    model = get_model()
     probabilities = model.predict(image, verbose=0)[0]
 
     predicted_index = np.argmax(probabilities)
