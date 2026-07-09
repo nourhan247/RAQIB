@@ -23,11 +23,13 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
-
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build
+        working-directory: RAQIB_API/RAQIB_API
+        run: dotnet build RAQIB_API.csproj --configuration Release
+      
+      - name: Publish
+        working-directory: RAQIB_API/RAQIB_API
+        run: dotnet publish RAQIB_API.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
