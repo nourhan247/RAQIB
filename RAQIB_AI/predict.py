@@ -8,6 +8,7 @@ import cv2
 from PIL import Image
 import time
 
+
 # ===========================
 # Configuration
 # ===========================
